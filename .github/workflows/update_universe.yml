@@ -26,17 +26,19 @@ jobs:
       - name: Install dependencies
         run: uv pip install -r requirements.txt --system
 
+      - name: Sync data from S3
+        run: aws s3 sync s3://index-management-data/data/ data/ --region eu-west-3
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
       - name: Update universe
         run: python .github/scripts/update_universe.py
         env:
           PYTHONPATH: ${{ github.workspace }}
 
-      - name: Commit and push
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/universe/ data/quarters.txt
-          git diff --cached --quiet || git commit -m "Auto-commit: universe update $(date +'%Y-%m-%d')"
-          git push origin main
+      - name: Sync data to S3
+        run: aws s3 sync data/ s3://index-management-data/data/ --region eu-west-3
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
