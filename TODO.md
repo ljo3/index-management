@@ -17,3 +17,18 @@
 
 ### Data quality
 - [ ] **`sklearn.ensemble.IsolationForest`** or **`sklearn.neighbors.LocalOutlierFactor`** — detect outlier prices/returns before they propagate into the covariance matrix
+
+---
+
+# DONE
+
+## Move data/ to S3
+
+*Prerequisites before Claude can wire up the CI and code changes:*
+
+- [x] Install AWS CLI — `brew install awscli`
+- [x] Create an IAM user in AWS console with S3 read/write permissions
+- [x] Run `aws configure` with your access key + secret
+- [x] Create an S3 bucket (`index-management-data`, eu-west-3)
+- [x] Add 3 GitHub Secrets to the repo: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`
+- [x] CI workflows updated, `data/` removed from git, synced to S3
