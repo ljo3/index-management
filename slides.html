@@ -310,6 +310,82 @@
 
 </section>
 
+<!-- ── 5. THE PROBLEM → MSR deep-dive (vertical group) ── -->
+<section>
+
+  <!-- 5a. Copy of The Problem with Strategy A greyed out -->
+  <section>
+    <h2>The Problem</h2>
+    <p class="label">Index tracking</p>
+    <div style="height:0.4em"></div>
+    <ul>
+      <li>Given a $1B portfolio, <strong>which 40 stocks</strong> should we hold each quarter?</li>
+      <li>And <strong>how many shares</strong> of each, to best track (or beat) the index?</li>
+    </ul>
+    <div style="height:0.4em"></div>
+    <div class="cols">
+      <div class="col" style="opacity:0.3;">
+        <div class="box">
+          <div class="box-title">Strategy A — Cap Weighting</div>
+          Weight each stock proportional to its market capitalisation. Simple, passive, mirrors the index directly.
+        </div>
+      </div>
+      <div class="col">
+        <div class="box">
+          <div class="box-title">Strategy B — Max Sharpe Ratio</div>
+          Optimise weights to maximise risk-adjusted return. More complex, potentially higher performance.
+        </div>
+      </div>
+    </div>
+    <p style="font-size:0.65em; color:var(--muted); margin-top:0.6em;">↓ scroll down to see how Max Sharpe Ratio works</p>
+  </section>
+
+  <!-- 5b. MSR explained -->
+  <section>
+    <h2>How Max Sharpe Ratio Works</h2>
+    <p class="label">Strategy B deep-dive</p>
+    <div style="height:0.3em"></div>
+
+    <div class="box" style="margin-bottom:0.5em;">
+      <div class="box-title">The core idea</div>
+      Don't just chase returns — find the portfolio where you get the <strong>most return per unit of risk</strong> taken. The Sharpe Ratio measures exactly this.
+    </div>
+
+    <div class="cols" style="font-size:0.8em;">
+      <div class="col">
+        <div class="box">
+          <div class="box-title">Step 1 — Measure the past</div>
+          Look at each stock's <strong>returns</strong> and <strong>volatility</strong> over the previous quarter. How much did it earn? How wild was the ride?
+        </div>
+        <div style="height:0.4em"></div>
+        <div class="box">
+          <div class="box-title">Step 2 — Find correlations</div>
+          Some stocks move together (banks), some don't (luxury vs. energy). Mixing uncorrelated stocks <strong>reduces overall risk</strong>.
+        </div>
+      </div>
+      <div class="col">
+        <div class="box">
+          <div class="box-title">Step 3 — Optimise</div>
+          Search for the exact weight combination that <strong>maximises</strong>:<br>
+          <div style="text-align:center; margin:0.4em 0; font-size:1.05em;">
+            Sharpe = <span style="border-top:2px solid var(--accent); display:inline-block; padding-top:2px;">Return − Risk-free rate</span> ÷ Volatility
+          </div>
+        </div>
+        <div style="height:0.4em"></div>
+        <div class="box">
+          <div class="box-title">Result</div>
+          Weights that aren't just proportional to size — they reflect the <strong>best risk-adjusted combination</strong> of all 40 stocks.
+        </div>
+      </div>
+    </div>
+
+    <p style="font-size:0.68em; color:var(--muted); margin-top:0.5em;">
+      This project uses <strong>Ledoit-Wolf covariance shrinkage</strong> to make the optimisation more stable with limited data.
+    </p>
+  </section>
+
+</section>
+
 <!-- ── 4. SYSTEM OVERVIEW ── -->
 <section>
   <h2>System Overview</h2>
