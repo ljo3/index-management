@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from index_management.utilities.utils import fullpath, checkpath
 from index_management.utilities.utils import last_day, last_working_day, validate_date
 from index_management.utilities.utils import get_datestr, get_datetime
+from index_management.validation.models import DateConfig, WeightsValidator
 import pandas as pd
 import numpy as np
 from decimal import getcontext, Decimal
@@ -61,26 +62,32 @@ class CapWeight(BaseStrategy):
         self.last_working_day = last_working_day(self.current_date)
         self.module = "cw"
         self.market_module = "caps"
+        DateConfig(current_date=self.current_date)
 
     def calculate_weights(self):
 
         # get current market data and prior weights
         [data_market, prior_weights] = self.prepare_strategy()
 
-        # Using Decimal to work calculate with precision
-        data_market["MarketCap"].apply(Decimal)
-        total_market_cap = sum(data_market["MarketCap"])
+        data_market["MarketCap"] = pd.to_numeric(data_market["MarketCap"], errors="coerce")
+        data_market = data_market.dropna(subset=["MarketCap"])
+        if data_market.empty:
+            raise ValueError(f"No valid MarketCap data for {get_datestr(self.current_date)} — file may contain rate-limit errors")
 
-        # calculating weights
-        data_market["Weights"] = data_market["MarketCap"].apply(lambda x: x/total_market_cap)
+        total_market_cap = Decimal(str(data_market["MarketCap"].sum()))
+        data_market["Weights"] = data_market["MarketCap"].apply(lambda x: float(Decimal(str(x)) / total_market_cap))
 
 
         path_new_weights = fullpath(self.path_strategy(self.module),
                                     get_datestr(self.last_day)+".csv")
         new_weights = data_market.loc[:,["Symbol","Weights"]]
+        WeightsValidator(weights=new_weights)
         new_weights.to_csv(path_new_weights, index=False)
 
-        df_weights = pd.merge(prior_weights, new_weights, on="Symbol", suffixes=('_old', '_new'))
+        if prior_weights is not None:
+            df_weights = pd.merge(prior_weights, new_weights, on="Symbol", suffixes=('_old', '_new'))
+        else:
+            df_weights = new_weights.rename(columns={"Weights": "Weights_new"})
 
         return prior_weights, df_weights
 
@@ -96,6 +103,7 @@ class MaxSharpeRatioPortfolio(BaseStrategy):
         self.module = "msr"
         self.market_module = "prices"
         self.risk_free_rate = 0.035
+        DateConfig(current_date=self.current_date)
 
 
     def calculate_weights(self):
@@ -122,6 +130,10 @@ class MaxSharpeRatioPortfolio(BaseStrategy):
         idx = df_data_market_all.Dates.dt.is_month_end
         df_data_market_all = df_data_market_all.loc[idx]
         df_data_market_all.drop("Dates", axis=1, inplace=True)
+
+        # drop tickers with no price history at all (e.g. UBLB.F) — all-NaN columns
+        # would cause dropna(axis=0) below to remove every row
+        df_data_market_all = df_data_market_all.dropna(axis=1, how="all")
 
         # get returns from prices
         df_returns = df_data_market_all.pct_change()
@@ -157,6 +169,7 @@ class MaxSharpeRatioPortfolio(BaseStrategy):
 
         df_to_write = df_weights.loc[:,["Asset","Weight_LW"]]
         df_to_write.columns = ["Symbol","Weights"]
+        WeightsValidator(weights=df_to_write)
         df_to_write.to_csv(fullpath( self.path_strategy("msr"),
                                                   get_datestr(self.current_date)+".csv" ), index=False)
 
