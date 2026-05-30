@@ -196,30 +196,92 @@
   </div>
 </section>
 
-<!-- ── 3. THE PROBLEM ── -->
+<!-- ── 3. THE PROBLEM (vertical group) ── -->
 <section>
-  <h2>The Problem</h2>
-  <p class="label">Index tracking</p>
-  <div style="height:0.4em"></div>
-  <ul>
-    <li>Given a $1B portfolio, <strong>which 40 stocks</strong> should we hold each quarter?</li>
-    <li>And <strong>how many shares</strong> of each, to best track (or beat) the index?</li>
-  </ul>
-  <div style="height:0.4em"></div>
-  <div class="cols">
-    <div class="col">
-      <div class="box">
-        <div class="box-title">Strategy A — Cap Weighting</div>
-        Weight each stock proportional to its market capitalisation. Simple, passive, mirrors the index directly.
+
+  <!-- 3a. The Problem -->
+  <section>
+    <h2>The Problem</h2>
+    <p class="label">Index tracking</p>
+    <div style="height:0.4em"></div>
+    <ul>
+      <li>Given a $1B portfolio, <strong>which 40 stocks</strong> should we hold each quarter?</li>
+      <li>And <strong>how many shares</strong> of each, to best track (or beat) the index?</li>
+    </ul>
+    <div style="height:0.4em"></div>
+    <div class="cols">
+      <div class="col">
+        <div class="box">
+          <div class="box-title">Strategy A — Cap Weighting</div>
+          Weight each stock proportional to its market capitalisation. Simple, passive, mirrors the index directly.
+        </div>
+      </div>
+      <div class="col" style="opacity:0.3;">
+        <div class="box">
+          <div class="box-title">Strategy B — Max Sharpe Ratio</div>
+          Optimise weights to maximise risk-adjusted return. More complex, potentially higher performance.
+        </div>
       </div>
     </div>
-    <div class="col">
-      <div class="box">
-        <div class="box-title">Strategy B — Max Sharpe Ratio</div>
-        Optimise weights to maximise risk-adjusted return. More complex, potentially higher performance.
+    <p style="font-size:0.65em; color:var(--muted); margin-top:0.6em;">↓ scroll down to see how Cap Weighting works</p>
+  </section>
+
+  <!-- 3b. Cap Weight explained -->
+  <section>
+    <h2>How Cap Weighting Works</h2>
+    <p class="label">Strategy A deep-dive</p>
+    <div style="height:0.3em"></div>
+
+    <!-- Formula -->
+    <div class="box" style="text-align:center; font-size:0.85em; margin-bottom:0.6em;">
+      <span style="font-size:1.1em;">Weight<sub>i</sub> = </span>
+      <span style="border-top:2px solid var(--accent); display:inline-block; padding-top:2px; font-size:1.05em;">
+        Market Cap<sub>i</sub>
+      </span>
+      <span style="font-size:1.1em;"> ÷ </span>
+      <span style="border-top:2px solid var(--accent); display:inline-block; padding-top:2px; font-size:1.05em;">
+        Σ Market Cap (all 40)
+      </span>
+    </div>
+
+    <!-- Bar chart diagram -->
+    <div style="font-size:0.72em; display:flex; flex-direction:column; gap:0.35em;">
+
+      <div style="display:flex; align-items:center; gap:0.7em;">
+        <span style="width:6em; text-align:right; flex-shrink:0;">LVMH</span>
+        <div style="background:var(--accent); height:1.3em; width:42%; border-radius:4px; display:flex; align-items:center; padding-left:0.5em; color:white; font-weight:600;">~10%</div>
+        <span style="color:var(--muted);">€300B cap</span>
+      </div>
+
+      <div style="display:flex; align-items:center; gap:0.7em;">
+        <span style="width:6em; text-align:right; flex-shrink:0;">Hermès</span>
+        <div style="background:var(--accent); height:1.3em; width:35%; border-radius:4px; display:flex; align-items:center; padding-left:0.5em; color:white; font-weight:600;">~8%</div>
+        <span style="color:var(--muted);">€250B cap</span>
+      </div>
+
+      <div style="display:flex; align-items:center; gap:0.7em;">
+        <span style="width:6em; text-align:right; flex-shrink:0;">TotalEnergies</span>
+        <div style="background:var(--accent); height:1.3em; width:20%; border-radius:4px; display:flex; align-items:center; padding-left:0.5em; color:white; font-weight:600;">~5%</div>
+        <span style="color:var(--muted);">€145B cap</span>
+      </div>
+
+      <div style="display:flex; align-items:center; gap:0.7em;">
+        <span style="width:6em; text-align:right; flex-shrink:0;">Accor</span>
+        <div style="background:var(--accent); height:1.3em; width:4%; border-radius:4px;"></div>
+        <span style="color:var(--muted);">~0.4% · €9B cap</span>
+      </div>
+
+      <div style="display:flex; align-items:center; gap:0.7em; margin-top:0.2em; border-top:1px solid var(--muted); padding-top:0.4em;">
+        <span style="width:6em; text-align:right; flex-shrink:0; font-weight:600;">Index total</span>
+        <div style="background:var(--muted); height:1.3em; width:100%; border-radius:4px; display:flex; align-items:center; padding-left:0.5em; color:white; font-weight:600;">~€2.9T → 100%</div>
       </div>
     </div>
-  </div>
+
+    <p style="font-size:0.68em; color:var(--muted); margin-top:0.6em;">
+      Bigger company = bigger slice of the portfolio. Rebalanced every quarter as caps change.
+    </p>
+  </section>
+
 </section>
 
 <!-- ── 4. SYSTEM OVERVIEW ── -->
