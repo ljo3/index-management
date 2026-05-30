@@ -2,6 +2,7 @@ from decimal import getcontext, Decimal
 from index_management.utilities.utils import fullpath, checkpath
 from index_management.utilities.utils import last_day, last_working_day, validate_date
 from index_management.utilities.utils import get_datestr
+from index_management.validation.models import ValuationConfig, WeightsValidator
 import pandas as pd
 import numpy as np
 from datetime import datetime
@@ -32,6 +33,7 @@ class Valuation:
         self.previous_quarter = previous_quarter
         self.universe = fullpath("data","universe","processed",
                                  get_datestr(previous_quarter)+".csv")
+        ValuationConfig(current_date=self.current_date, module=self.module)
 
     def valuation_paths(self):
         self.folder_path_quarterly = fullpath("data", "valuation", "quarterly", self.module)
@@ -46,6 +48,7 @@ class Valuation:
 
         # read weight and price files
         weights = pd.read_csv(path_weights)
+        WeightsValidator(weights=weights)
         prices = pd.read_csv(path_price)
 
         # convert prices["Date"] to datetime and get just date

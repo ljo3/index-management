@@ -4,6 +4,7 @@ import requests
 from index_management.utilities.utils import fullpath, checkpath
 from index_management.utilities.utils import last_day, last_working_day, validate_date
 from index_management.utilities.utils import get_datestr
+from index_management.validation.models import DateConfig
 
 class Universe:
 
@@ -12,6 +13,7 @@ class Universe:
         self.current_date = validate_date(current_date)
         self.last_day = last_day(self.current_date)
         self.last_working_day = last_working_day(self.current_date)
+        DateConfig(current_date=self.current_date)
 
     def path_universe(self, module):
         # module could be raw or processed

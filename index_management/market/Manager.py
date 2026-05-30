@@ -4,6 +4,7 @@ import yfinance as yf
 from index_management.utilities.utils import fullpath, checkpath
 from index_management.utilities.utils import last_day, last_working_day, validate_date
 from index_management.utilities.utils import get_datestr
+from index_management.validation.models import MarketConfig
 from datetime import timedelta
 
 class Market:
@@ -33,6 +34,7 @@ class Market:
                                  get_datestr(previous_quarter)+".csv")
 
         self.universe = pd.read_csv(universe_path)
+        MarketConfig(current_date=self.current_date, universe=self.universe, interval=self.interval)
 
     def path_market(self,module):
         folder_path = fullpath("data", "market", module)
