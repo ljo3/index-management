@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CAC 40 Index Management</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reset.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/simple.css">
+  <style>
+    :root {
+      --accent: #2563eb;
+      --light: #eff6ff;
+      --muted: #64748b;
+    }
+    .reveal { font-size: 26px; }
+    .reveal h1 { font-size: 1.8em; color: var(--accent); }
+    .reveal h2 { font-size: 1.3em; color: var(--accent); margin-bottom: 0.1em; }
+    .reveal h3 { color: var(--accent); }
+    .reveal section { text-align: left; }
+    .reveal .title-slide { text-align: center; }
+    .reveal ul { margin-left: 1em; margin-top: 0.3em; }
+    .reveal ul li { margin-bottom: 0.25em; font-size: 0.9em; }
+    .reveal p { margin: 0.3em 0; }
+
+    /* pipeline diagram */
+    .pipeline {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      margin: 0.6em 0;
+      flex-wrap: nowrap;
+    }
+    .pipe-box {
+      background: var(--accent);
+      color: white;
+      padding: 0.5em 0.9em;
+      border-radius: 6px;
+      font-size: 0.75em;
+      font-weight: 600;
+      text-align: center;
+      min-width: 90px;
+    }
+    .pipe-box.highlight {
+      background: #1e40af;
+      box-shadow: 0 0 0 3px #93c5fd;
+    }
+    .pipe-arrow {
+      color: var(--accent);
+      font-size: 1.2em;
+      padding: 0 0.3em;
+    }
+    .pipe-sub {
+      font-size: 0.6em;
+      font-weight: 400;
+      opacity: 0.85;
+      display: block;
+      margin-top: 2px;
+    }
+
+    /* info boxes */
+    .box {
+      background: var(--light);
+      border-left: 4px solid var(--accent);
+      border-radius: 4px;
+      padding: 0.4em 0.8em;
+      margin: 0.4em 0;
+      font-size: 0.78em;
+    }
+    .box-title {
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 0.2em;
+    }
+
+    /* two column layout */
+    .cols {
+      display: flex;
+      gap: 1.5em;
+      align-items: flex-start;
+    }
+    .col { flex: 1; }
+
+    /* tag chips */
+    .tag {
+      display: inline-block;
+      background: var(--accent);
+      color: white;
+      border-radius: 12px;
+      padding: 0.1em 0.6em;
+      font-size: 0.6em;
+      font-weight: 600;
+      vertical-align: middle;
+      margin-left: 0.3em;
+    }
+
+    /* muted label */
+    .label {
+      color: var(--muted);
+      font-size: 0.65em;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .reveal .slides section .fragment { opacity: 1; visibility: visible; }
+  </style>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+<!-- ── 1. TITLE ── -->
+<section class="title-slide">
+  <br>
+  <h1 style="font-size:1.6em;">CAC 40 Index Management</h1>
+  <p style="color:var(--muted); font-size:0.85em;">A quarterly rebalancing pipeline for the French stock market</p>
+  <br>
+  <p class="label">ljo3 · 2026</p>
+</section>
+
+<!-- ── 2. WHAT IS THE CAC 40 ── -->
+<section>
+  <h2>What is the CAC 40?</h2>
+  <p class="label">Context</p>
+  <div style="height:0.4em"></div>
+  <ul>
+    <li>The <strong>CAC 40</strong> is France's benchmark stock market index — the 40 largest publicly traded companies on Euronext Paris</li>
+    <li>Think of it like the French equivalent of the S&amp;P 500</li>
+    <li>Its composition changes quarterly as companies grow, shrink, or delist</li>
+  </ul>
+  <div style="height:0.4em"></div>
+  <div class="box">
+    <div class="box-title">Why does this matter?</div>
+    Funds that track the CAC 40 must rebalance their holdings every quarter to stay aligned with the index. Getting this right — knowing which stocks to hold and in what quantities — is the core problem this project solves.
+  </div>
+</section>
+
+<!-- ── 3. THE PROBLEM ── -->
+<section>
+  <h2>The Problem</h2>
+  <p class="label">Index tracking</p>
+  <div style="height:0.4em"></div>
+  <ul>
+    <li>Given a $1B portfolio, <strong>which 40 stocks</strong> should we hold each quarter?</li>
+    <li>And <strong>how many shares</strong> of each, to best track (or beat) the index?</li>
+  </ul>
+  <div style="height:0.4em"></div>
+  <div class="cols">
+    <div class="col">
+      <div class="box">
+        <div class="box-title">Strategy A — Cap Weighting</div>
+        Weight each stock proportional to its market capitalisation. Simple, passive, mirrors the index directly.
+      </div>
+    </div>
+    <div class="col">
+      <div class="box">
+        <div class="box-title">Strategy B — Max Sharpe Ratio</div>
+        Optimise weights to maximise risk-adjusted return. More complex, potentially higher performance.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── 4. SYSTEM OVERVIEW ── -->
+<section>
+  <h2>System Overview</h2>
+  <p class="label">Four-stage pipeline</p>
+  <div style="height:0.4em"></div>
+  <div class="pipeline">
+    <div class="pipe-box">Universe<span class="pipe-sub">Who's in the index?</span></div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-box">Market<span class="pipe-sub">Prices &amp; market caps</span></div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-box">Strategy<span class="pipe-sub">Calculate weights</span></div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-box">Valuation<span class="pipe-sub">Convert to shares</span></div>
+  </div>
+  <div style="height:0.4em"></div>
+  <ul>
+    <li>Each stage is a self-contained Python module with a <strong>Manager</strong> class</li>
+    <li>All modules are initialised with a <strong>quarter-end date</strong> (e.g. <code>20250331</code>)</li>
+    <li>Data is persisted as CSVs between stages — each stage reads from the previous stage's output</li>
+    <li>The full pipeline runs automatically via <strong>GitHub Actions</strong> on each quarter-end</li>
+  </ul>
+</section>
+
+<!-- ── 5. UNIVERSE ── -->
+<section>
+  <h2>Stage 1 — Universe</h2>
+  <p class="label">Who's in the index?</p>
+  <div style="height:0.4em"></div>
+  <div class="pipeline" style="justify-content:flex-start;">
+    <div class="pipe-box highlight">Universe</div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-box" style="opacity:0.4;">Market</div>
+    <div class="pipe-arrow" style="opacity:0.4;">→</div>
+    <div class="pipe-box" style="opacity:0.4;">Strategy</div>
+    <div class="pipe-arrow" style="opacity:0.4;">→</div>
+    <div class="pipe-box" style="opacity:0.4;">Valuation</div>
+  </div>
+  <div style="height:0.4em"></div>
+  <ul>
+    <li>The official CAC 40 list is published by <strong>bnains.org</strong> as ISIN codes — a universal financial identifier (e.g. <code>FR0000131104</code>)</li>
+    <li>Stock data APIs like Yahoo Finance use <strong>ticker symbols</strong> instead (e.g. <code>BNP.PA</code>)</li>
+    <li>The Universe module <strong>resolves ISINs → ticker symbols</strong> via the Yahoo Finance search API</li>
+    <li>Output: a processed CSV of 40 tickers, one per quarter-end date</li>
+  </ul>
+</section>
+
+<!-- ── 6. MARKET ── -->
+<section>
+  <h2>Stage 2 — Market</h2>
+  <p class="label">Prices &amp; market caps</p>
+  <div style="height:0.4em"></div>
+  <div class="pipeline" style="justify-content:flex-start;">
+    <div class="pipe-box" style="opacity:0.4;">Universe</div>
+    <div class="pipe-arrow" style="opacity:0.4;">→</div>
+    <div class="pipe-box highlight">Market</div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-box" style="opacity:0.4;">Strategy</div>
+    <div class="pipe-arrow" style="opacity:0.4;">→</div>
+    <div class="pipe-box" style="opacity:0.4;">Valuation</div>
+  </div>
+  <div style="height:0.4em"></div>
+  <div class="cols">
+    <div class="col">
+      <div class="box">
+        <div class="box-title">Price history</div>
+        Daily closing prices for all 40 tickers going back to the previous quarter — used by the MSR strategy for return calculations.
+      </div>
+    </div>
+    <div class="col">
+      <div class="box">
+        <div class="box-title">Market caps</div>
+        Each company's total market value at quarter-end — used by the Cap Weight strategy to compute proportional weights.
+      </div>
+    </div>
+  </div>
+  <div style="height:0.4em"></div>
+  <p style="font-size:0.75em; color:var(--muted);">Data fetched from <strong>yfinance</strong> (Yahoo Finance Python library)</p>
+</section>
+
+<!-- ── 7. STRATEGY: CAP WEIGHT ── -->
+<section>
+  <h2>Stage 3 — Strategy</h2>
+  <p class="label">Cap weighting</p>
+  <div style="height:0.4em"></div>
+  <div class="pipeline" style="justify-content:flex-start;">
+    <div class="pipe-box" style="opacity:0.4;">Universe</div>
+    <div class="pipe-arrow" style="opacity:0.4;">→</div>
+    <div class="pipe-box" style="opacity:0.4;">Market</div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-box highlight">Strategy</div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-box" style="opacity:0.4;">Valuation</div>
+  </div>
+  <br>
+  <p><strong>Cap Weight</strong> <span class="tag">passive</span></p>
+  <ul>
+    <li>Each stock's weight = its market cap ÷ total market cap of all 40</li>
+    <li>Larger companies get a higher weight — mirrors how the index itself is calculated</li>
+    <li>Simple, low-turnover, low cost to implement</li>
+    <li>Output: a CSV of 40 weights summing to 1.0</li>
+  </ul>
+  <div style="height:0.4em"></div>
+  <div class="box">
+    <div class="box-title">Example</div>
+    LVMH has the largest market cap in the CAC 40 (~€300B), so it receives the highest weight (~8–10%)
+  </div>
+</section>
+
+<!-- ── 8. STRATEGY: MSR ── -->
+<section>
+  <h2>Stage 3 — Strategy</h2>
+  <p class="label">Max Sharpe Ratio</p>
+  <div style="height:0.4em"></div>
+  <div class="pipeline" style="justify-content:flex-start;">
+    <div class="pipe-box" style="opacity:0.4;">Universe</div>
+    <div class="pipe-arrow" style="opacity:0.4;">→</div>
+    <div class="pipe-box" style="opacity:0.4;">Market</div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-box highlight">Strategy</div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-box" style="opacity:0.4;">Valuation</div>
+  </div>
+  <br>
+  <p><strong>Max Sharpe Ratio Portfolio</strong> <span class="tag">optimised</span></p>
+  <ul>
+    <li><strong>Sharpe ratio</strong> = return above the risk-free rate ÷ volatility — a measure of return per unit of risk</li>
+    <li>Uses historical returns to estimate expected return and <strong>covariance</strong> (how stocks move together)</li>
+    <li>Runs a numerical optimiser (scipy SLSQP) to find the weights that maximise the Sharpe ratio</li>
+    <li>Uses <strong>Ledoit-Wolf shrinkage</strong> (scikit-learn) to produce a more stable covariance estimate — avoids overfitting on short return histories</li>
+  </ul>
+</section>
+
+<!-- ── 9. VALUATION ── -->
+<section>
+  <h2>Stage 4 — Valuation</h2>
+  <p class="label">Converting weights to shares</p>
+  <div style="height:0.4em"></div>
+  <div class="pipeline" style="justify-content:flex-start;">
+    <div class="pipe-box" style="opacity:0.4;">Universe</div>
+    <div class="pipe-arrow" style="opacity:0.4;">→</div>
+    <div class="pipe-box" style="opacity:0.4;">Market</div>
+    <div class="pipe-arrow" style="opacity:0.4;">→</div>
+    <div class="pipe-box" style="opacity:0.4;">Strategy</div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-box highlight">Valuation</div>
+  </div>
+  <div style="height:0.4em"></div>
+  <ul>
+    <li>Takes the strategy weights + quarter-end prices and converts them into a <strong>real share count</strong> for a $1B notional portfolio</li>
+    <li>Fractional shares are floored — the remainder is held as <strong>cash</strong></li>
+    <li>The quarterly allocation is stored and reused daily</li>
+  </ul>
+  <div style="height:0.4em"></div>
+  <div class="box">
+    <div class="box-title">Daily valuation (CI)</div>
+    A GitHub Actions job runs on every push to <code>main</code> — it fetches live prices, multiplies by the share counts, and commits the portfolio value back to the repo as a CSV.
+  </div>
+</section>
+
+<!-- ── 10. CI/CD ── -->
+<section>
+  <h2>Automation</h2>
+  <p class="label">GitHub Actions</p>
+  <div style="height:0.4em"></div>
+  <div class="cols">
+    <div class="col">
+      <div class="box">
+        <div class="box-title">Quarterly — Universe Update</div>
+        <ul style="margin-top:0.3em;">
+          <li>Triggers on the last few days of each quarter month (Mar / Jun / Sep / Dec)</li>
+          <li>Fetches new CAC 40 composition, resolves ISINs, appends new quarter to <code>quarters.txt</code></li>
+          <li>Idempotent — safe to re-run</li>
+        </ul>
+      </div>
+    </div>
+    <div class="col">
+      <div class="box">
+        <div class="box-title">Daily — Portfolio Valuation</div>
+        <ul style="margin-top:0.3em;">
+          <li>Triggers on every push to <code>main</code></li>
+          <li>Downloads latest prices, computes portfolio value, auto-commits output CSVs</li>
+          <li>Keeps a running daily history of portfolio performance</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── 11. SUMMARY ── -->
+<section>
+  <h2>Summary</h2>
+  <div style="height:0.4em"></div>
+  <div class="pipeline">
+    <div class="pipe-box">Universe<span class="pipe-sub">ISIN → ticker</span></div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-box">Market<span class="pipe-sub">prices &amp; caps</span></div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-box">Strategy<span class="pipe-sub">CW or MSR</span></div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-box">Valuation<span class="pipe-sub">$1B portfolio</span></div>
+  </div>
+  <div style="height:0.4em"></div>
+  <ul>
+    <li>End-to-end pipeline tracking the <strong>CAC 40</strong> with quarterly rebalancing</li>
+    <li>Two strategies: <strong>passive cap weighting</strong> and <strong>optimised max Sharpe ratio</strong></li>
+    <li>scikit-learn's <strong>LedoitWolf</strong> covariance estimator stabilises the MSR optimisation</li>
+    <li>Fully automated via <strong>GitHub Actions</strong> — universe updates and daily valuation run without manual intervention</li>
+  </ul>
+</section>
+
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script>
+  Reveal.initialize({
+    hash: true,
+    controls: true,
+    progress: true,
+    slideNumber: true,
+    transition: 'slide',
+    transitionSpeed: 'fast',
+  });
+</script>
+</body>
+</html>
