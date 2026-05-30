@@ -196,10 +196,36 @@
   </div>
 </section>
 
-<!-- ── 3. THE PROBLEM (vertical group) ── -->
+<!-- ── 3. THE PROBLEM ── -->
+<section>
+  <h2>The Problem</h2>
+  <p class="label">Index tracking</p>
+  <div style="height:0.4em"></div>
+  <ul>
+    <li>Given a $1B portfolio, <strong>which 40 stocks</strong> should we hold each quarter?</li>
+    <li>And <strong>how many shares</strong> of each, to best track (or beat) the index?</li>
+  </ul>
+  <div style="height:0.4em"></div>
+  <div class="cols">
+    <div class="col">
+      <div class="box">
+        <div class="box-title">Strategy A — Cap Weighting</div>
+        Weight each stock proportional to its market capitalisation. Simple, passive, mirrors the index directly.
+      </div>
+    </div>
+    <div class="col">
+      <div class="box">
+        <div class="box-title">Strategy B — Max Sharpe Ratio</div>
+        Optimise weights to maximise risk-adjusted return. More complex, potentially higher performance.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── 4. THE PROBLEM → Cap Weight deep-dive (vertical group) ── -->
 <section>
 
-  <!-- 3a. The Problem -->
+  <!-- 4a. Copy of The Problem with Strategy B greyed out -->
   <section>
     <h2>The Problem</h2>
     <p class="label">Index tracking</p>
@@ -226,7 +252,7 @@
     <p style="font-size:0.65em; color:var(--muted); margin-top:0.6em;">↓ scroll down to see how Cap Weighting works</p>
   </section>
 
-  <!-- 3b. Cap Weight explained -->
+  <!-- 4b. Cap Weight explained -->
   <section>
     <h2>How Cap Weighting Works</h2>
     <p class="label">Strategy A deep-dive</p>
