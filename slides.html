@@ -8,15 +8,72 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/simple.css">
   <style>
+    /* ── Light mode (default) ── */
     :root {
       --accent: #2563eb;
-      --light: #eff6ff;
-      --muted: #64748b;
+      --light:  #eff6ff;
+      --muted:  #64748b;
+      --bg:     #f0f2f5;
+      --text:   #1e293b;
     }
+
+    /* ── Light mode explicit rules ── */
+    .reveal, .reveal section,
+    .reveal p, .reveal li, .reveal ul { color: #1e293b !important; }
+    .reveal h1, .reveal h2, .reveal h3 { color: #2563eb !important; }
+    .reveal, .reveal .backgrounds { background-color: #f0f2f5 !important; }
+    .reveal .slide-background { background: #f0f2f5 !important; }
+
+    /* ── Dark mode — manual toggle ── */
+    html[data-theme="dark"] { --accent: #e8967e; --light: #2e201c; --muted: #c4907f; }
+    html[data-theme="dark"] .reveal,
+    html[data-theme="dark"] .reveal section,
+    html[data-theme="dark"] .reveal p,
+    html[data-theme="dark"] .reveal li,
+    html[data-theme="dark"] .reveal ul { color: #f5e6e0 !important; }
+    html[data-theme="dark"] .reveal h1,
+    html[data-theme="dark"] .reveal h2,
+    html[data-theme="dark"] .reveal h3 { color: #e8967e !important; }
+    html[data-theme="dark"] .reveal,
+    html[data-theme="dark"] .reveal .backgrounds { background-color: #141414 !important; }
+    html[data-theme="dark"] .reveal .slide-background { background: #141414 !important; }
+
+    /* ── Dark mode — system preference ── */
+    @media (prefers-color-scheme: dark) {
+      html:not([data-theme="light"]) { --accent: #e8967e; --light: #2e201c; --muted: #c4907f; }
+      html:not([data-theme="light"]) .reveal,
+      html:not([data-theme="light"]) .reveal section,
+      html:not([data-theme="light"]) .reveal p,
+      html:not([data-theme="light"]) .reveal li,
+      html:not([data-theme="light"]) .reveal ul { color: #f5e6e0 !important; }
+      html:not([data-theme="light"]) .reveal h1,
+      html:not([data-theme="light"]) .reveal h2,
+      html:not([data-theme="light"]) .reveal h3 { color: #e8967e !important; }
+      html:not([data-theme="light"]) .reveal,
+      html:not([data-theme="light"]) .reveal .backgrounds { background-color: #141414 !important; }
+      html:not([data-theme="light"]) .reveal .slide-background { background: #141414 !important; }
+    }
+
+    #theme-toggle {
+      position: fixed;
+      top: 14px;
+      right: 14px;
+      z-index: 9999;
+      background: rgba(128,128,128,0.15);
+      border: 1px solid rgba(128,128,128,0.3);
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1.1em;
+      padding: 4px 10px;
+      line-height: 1;
+      opacity: 0.8;
+      transition: opacity 0.2s;
+    }
+    #theme-toggle:hover { opacity: 1; }
     .reveal { font-size: 26px; }
-    .reveal h1 { font-size: 1.8em; color: var(--accent); }
-    .reveal h2 { font-size: 1.3em; color: var(--accent); margin-bottom: 0.1em; }
-    .reveal h3 { color: var(--accent); }
+    .reveal h1 { font-size: 1.8em; }
+    .reveal h2 { font-size: 1.3em; margin-bottom: 0.1em; }
+    .reveal h3 { }
     .reveal section { text-align: left; }
     .reveal .title-slide { text-align: center; }
     .reveal ul { margin-left: 1em; margin-top: 0.3em; }
@@ -108,16 +165,18 @@
   </style>
 </head>
 <body>
+<button id="theme-toggle" title="Toggle dark/light mode">🌙</button>
 <div class="reveal">
 <div class="slides">
 
 <!-- ── 1. TITLE ── -->
 <section class="title-slide">
   <br>
-  <h1 style="font-size:1.6em;">CAC 40 Index Management</h1>
-  <p style="color:var(--muted); font-size:0.85em;">A quarterly rebalancing pipeline for the French stock market</p>
+  <h1 style="font-size:1.6em;">CAC 40 Smart Beta Edition</h1>
+  <p style="color:var(--muted); font-size:0.85em;">Understanding Smart Beta Indices</p>
   <br>
-  <p class="label">ljo3 · 2026</p>
+  <p class="label" style="text-transform:none; color:#c0674a;">Made By Lawrence</p>
+  <p class="label" style="text-transform:none;">June 2026</p>
 </section>
 
 <!-- ── 2. WHAT IS THE CAC 40 ── -->
@@ -227,14 +286,14 @@
   <div class="cols">
     <div class="col">
       <div class="box">
-        <div class="box-title">Price history</div>
-        Daily closing prices for all 40 tickers going back to the previous quarter — used by the MSR strategy for return calculations.
+        <div class="box-title">Market caps</div>
+        Each company's total market value at quarter-end — used by the Cap Weight strategy to compute proportional weights.
       </div>
     </div>
     <div class="col">
       <div class="box">
-        <div class="box-title">Market caps</div>
-        Each company's total market value at quarter-end — used by the Cap Weight strategy to compute proportional weights.
+        <div class="box-title">Price history</div>
+        Daily closing prices for all 40 tickers going back to the previous quarter — used by the MSR strategy for return calculations.
       </div>
     </div>
   </div>
@@ -378,6 +437,22 @@
 
 <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
 <script>
+  const btn = document.getElementById('theme-toggle');
+  const root = document.documentElement;
+
+  function currentTheme() {
+    if (root.hasAttribute('data-theme')) return root.getAttribute('data-theme');
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+
+  function applyTheme(theme) {
+    root.setAttribute('data-theme', theme);
+    btn.textContent = theme === 'dark' ? '☀️' : '🌙';
+  }
+
+  btn.addEventListener('click', () => applyTheme(currentTheme() === 'dark' ? 'light' : 'dark'));
+  applyTheme(currentTheme());
+
   Reveal.initialize({
     hash: true,
     controls: true,

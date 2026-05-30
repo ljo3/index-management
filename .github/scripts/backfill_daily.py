@@ -39,39 +39,39 @@ if start_date.date() >= today.date():
 df_num_shares = pd.read_csv(fullpath(value.folder_path_quarterly, get_datestr(value.previous_quarter) + ".csv"))
 symbol = df_num_shares["Symbol"].to_list()
 
-# download in batches of 10 to avoid rate limiting
+# download one ticker at a time to avoid rate limiting
 import time
-batch_size = 10
 frames = []
 start_str = start_date.strftime("%Y-%m-%d")
 end_str = (today + timedelta(days=1)).strftime("%Y-%m-%d")
+failed = []
 
-for i in range(0, len(symbol), batch_size):
-    batch = symbol[i:i + batch_size]
-    print(f"Downloading batch {i // batch_size + 1}: {batch}")
+for i, ticker in enumerate(symbol):
+    print(f"[{i+1}/{len(symbol)}] {ticker}", end=" ", flush=True)
     for attempt in range(3):
         try:
-            batch_data = yf.download(
-                batch,
+            data = yf.download(
+                ticker,
                 start=start_str,
                 end=end_str,
                 interval="1d",
-                group_by="column",
                 auto_adjust=True,
                 progress=False,
             )
-            if len(batch) == 1:
-                batch_data = batch_data[["Close"]].rename(columns={"Close": batch[0]})
-            else:
-                batch_data = batch_data.xs("Close", level=0, axis=1)
-            frames.append(batch_data)
+            close = data[["Close"]].rename(columns={"Close": ticker})
+            frames.append(close)
+            print("OK")
             break
         except Exception as e:
-            print(f"  Attempt {attempt + 1} failed: {e}")
-            time.sleep(15)
+            print(f"attempt {attempt+1} failed: {e}", end=" ", flush=True)
+            time.sleep(20)
     else:
-        print(f"  Skipping batch after 3 failures")
-    time.sleep(3)
+        print("SKIPPED")
+        failed.append(ticker)
+    time.sleep(15)
+
+if failed:
+    print(f"\nWarning: {len(failed)} tickers skipped: {failed}")
 
 if not frames:
     print("No market data returned.")
