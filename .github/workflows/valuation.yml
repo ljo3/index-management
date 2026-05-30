@@ -1,8 +1,8 @@
 name: Daily Valuation
 
 on:
-#  schedule:
-#    - cron: '00 18 * * 5'
+  schedule:
+    - cron: '00 18 * * *'
   push:
    branches:
        - 'main'
@@ -29,7 +29,7 @@ jobs:
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: Run Daily Valuation
       run: |
-        python value_daily.py
+        python .github/scripts/value_daily.py
 
         git config --global user.name "github-actions[bot]"
         git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"

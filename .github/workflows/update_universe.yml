@@ -1,0 +1,42 @@
+name: Quarterly Universe Update
+
+on:
+  # Fire on the last four days of each quarter month so the job cannot miss
+  # the quarter-end even if the scheduler skips a day. The script is idempotent
+  # and exits early once the quarter has already been processed.
+  schedule:
+    - cron: '0 18 28,29,30,31 3,12 *'  # March & December (31-day months)
+    - cron: '0 18 28,29,30 6,9 *'       # June & September (30-day months)
+  workflow_dispatch:                      # allow manual runs at any time
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: uv pip install -r requirements.txt --system
+
+      - name: Update universe
+        run: python .github/scripts/update_universe.py
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+
+      - name: Commit and push
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/universe/ data/quarters.txt
+          git diff --cached --quiet || git commit -m "Auto-commit: universe update $(date +'%Y-%m-%d')"
+          git push origin main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
