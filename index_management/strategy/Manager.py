@@ -1,7 +1,7 @@
-from abc import ABC, abstractmethod #, property
-from utilities.utils import fullpath, checkpath
-from utilities.utils import last_day, last_working_day, validate_date
-from utilities.utils import get_datestr, get_datetime
+from abc import ABC, abstractmethod
+from index_management.utilities.utils import fullpath, checkpath
+from index_management.utilities.utils import last_day, last_working_day, validate_date
+from index_management.utilities.utils import get_datestr, get_datetime
 import pandas as pd
 import numpy as np
 from decimal import getcontext, Decimal
@@ -9,7 +9,7 @@ from scipy.optimize import minimize
 from sklearn.covariance import LedoitWolf
 
 
-getcontext().prec = 16 
+getcontext().prec = 16
 
 class BaseStrategy(ABC):
     """ Setting base strategy with expected signature """
@@ -27,11 +27,11 @@ class BaseStrategy(ABC):
         folder_path = fullpath("data", "market", module)
         checkpath(folder_path)
         return fullpath(folder_path)
-    
+
     def prepare_strategy(self):
 
         # get market data
-        path_data_market = fullpath( self.path_market(self.module), 
+        path_data_market = fullpath( self.path_market(self.market_module),
                                      get_datestr(self.current_date)+".csv" )
         data_market = pd.read_csv(path_data_market)
 
@@ -43,13 +43,13 @@ class BaseStrategy(ABC):
         idx = validate_date(self.current_date) > quarters["qtr"]
         if any(idx):
             previous_quarter = max(quarters.loc[idx, "qtr"])
-            prior_weights = pd.read_csv(fullpath( self.path_strategy("caps"), 
+            prior_weights = pd.read_csv(fullpath( self.path_strategy("cw"),
                                                   get_datestr(previous_quarter)+".csv" ))
-        else: 
-            prior_weights = None # pd.DataFrame(np.zeros(shape=data_market.shape[0]), columns=data_market.columns)
+        else:
+            prior_weights = None
 
-        return data_market, prior_weights    
-    
+        return data_market, prior_weights
+
 class CapWeight(BaseStrategy):
 
     """ Implements cap weighted indices """
@@ -59,22 +59,23 @@ class CapWeight(BaseStrategy):
         self.current_date = validate_date(current_date)
         self.last_day = last_day(self.current_date)
         self.last_working_day = last_working_day(self.current_date)
-        self.module = "caps"
+        self.module = "cw"
+        self.market_module = "caps"
 
     def calculate_weights(self):
 
         # get current market data and prior weights
         [data_market, prior_weights] = self.prepare_strategy()
-        
+
         # Using Decimal to work calculate with precision
         data_market["MarketCap"].apply(Decimal)
         total_market_cap = sum(data_market["MarketCap"])
-        
+
         # calculating weights
         data_market["Weights"] = data_market["MarketCap"].apply(lambda x: x/total_market_cap)
-        
 
-        path_new_weights = fullpath(self.path_strategy(self.module), 
+
+        path_new_weights = fullpath(self.path_strategy(self.module),
                                     get_datestr(self.last_day)+".csv")
         new_weights = data_market.loc[:,["Symbol","Weights"]]
         new_weights.to_csv(path_new_weights, index=False)
@@ -85,14 +86,15 @@ class CapWeight(BaseStrategy):
 
 class MaxSharpeRatioPortfolio(BaseStrategy):
 
-    """ Implements cap weighted indices """
+    """ Implements max Sharpe ratio portfolio via mean-variance optimization """
 
     def __init__(self, current_date):
         self.inception_date = validate_date("2020-12-31")
         self.current_date = validate_date(current_date)
         self.last_day = last_day(self.current_date)
         self.last_working_day = last_working_day(self.current_date)
-        self.module = "prices"
+        self.module = "msr"
+        self.market_module = "prices"
         self.risk_free_rate = 0.035
 
 
@@ -136,7 +138,7 @@ class MaxSharpeRatioPortfolio(BaseStrategy):
             portfolio_return = np.dot(weights, expected_returns)
             portfolio_volatility = np.dot(weights.transpose(), np.dot(cov_matrix, weights)) ** 1/2
             msr = (portfolio_return - self.risk_free_rate/12) / portfolio_volatility
-            return -msr 
+            return -msr
 
         constraints = ({'type': 'eq', 'fun': lambda weights: np.sum(weights) - 1})
         bounds = tuple((0, 1) for _ in range(len(expected_returns)))
@@ -155,24 +157,7 @@ class MaxSharpeRatioPortfolio(BaseStrategy):
 
         df_to_write = df_weights.loc[:,["Asset","Weight_LW"]]
         df_to_write.columns = ["Symbol","Weights"]
-        df_to_write.to_csv(fullpath( self.path_strategy("msr"), 
+        df_to_write.to_csv(fullpath( self.path_strategy("msr"),
                                                   get_datestr(self.current_date)+".csv" ), index=False)
 
         return prior_weights, df_weights
-    
-        # # Using Decimal to work calculate with precision
-        # data_market["MarketCap"].apply(Decimal)
-        # total_market_cap = sum(data_market["MarketCap"])
-        
-        # # calculating weights
-        # data_market["Weights"] = data_market["MarketCap"].apply(lambda x: x/total_market_cap)
-        
-
-        # path_new_weights = fullpath(self.path_strategy(self.module), 
-        #                             get_datestr(self.last_day)+".csv")
-        # new_weights = data_market.loc[:,["Symbol","Weights"]]
-        # new_weights.to_csv(path_new_weights, index=False)
-
-        # df_weights = pd.merge(prior_weights, new_weights, on="Symbol", suffixes=('_old', '_new'))
-
-        # return prior_weights, new_weights, df_weights

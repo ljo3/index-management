@@ -1,9 +1,9 @@
 import os
 import pandas as pd
 import requests
-from utilities.utils import fullpath, checkpath
-from utilities.utils import last_day, last_working_day, validate_date
-from utilities.utils import get_datestr
+from index_management.utilities.utils import fullpath, checkpath
+from index_management.utilities.utils import last_day, last_working_day, validate_date
+from index_management.utilities.utils import get_datestr
 
 class Universe:
 
@@ -18,9 +18,9 @@ class Universe:
         folder_path = fullpath("data", "universe", module)
         checkpath(folder_path)
         return folder_path
-    
+
     def get_raw_universe(self):
-        
+
         # universe path
         path_universe = self.path_universe("raw")
         path_universe = fullpath(path_universe, get_datestr(self.last_day)+".csv")
@@ -48,4 +48,4 @@ class Universe:
 
         self.universe['symbol'] = symbol_list
 
-        return self.universe    
+        return self.universe

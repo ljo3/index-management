@@ -1,9 +1,9 @@
 from decimal import getcontext, Decimal
-from utilities.utils import fullpath, checkpath
-from utilities.utils import last_day, last_working_day, validate_date
-from utilities.utils import get_datestr
+from index_management.utilities.utils import fullpath, checkpath
+from index_management.utilities.utils import last_day, last_working_day, validate_date
+from index_management.utilities.utils import get_datestr
 import pandas as pd
-import numpy as np 
+import numpy as np
 from datetime import datetime
 
 class Valuation:
@@ -14,7 +14,7 @@ class Valuation:
         self.last_day = last_day(self.current_date)
         self.last_working_day = last_working_day(self.current_date)
         self.module = module
-        
+
         # initialize folders
         self.valuation_paths()
 
@@ -25,13 +25,13 @@ class Valuation:
         # get prior_weights
         idx = validate_date(self.current_date) > quarters["qtr"]
         if any(idx):
-            previous_quarter = max(quarters.loc[idx, "qtr"])        
-        else: 
+            previous_quarter = max(quarters.loc[idx, "qtr"])
+        else:
             previous_quarter = self.current_date
-        
+
         self.previous_quarter = previous_quarter
         self.universe = fullpath("data","universe","processed",
-                                 get_datestr(previous_quarter)+".csv")        
+                                 get_datestr(previous_quarter)+".csv")
 
     def valuation_paths(self):
         self.folder_path_quarterly = fullpath("data", "valuation", "quarterly", self.module)
@@ -47,19 +47,18 @@ class Valuation:
         # read weight and price files
         weights = pd.read_csv(path_weights)
         prices = pd.read_csv(path_price)
-        
+
         # convert prices["Date"] to datetime and get just date
         prices['Date'] = pd.to_datetime(prices['Date'])
-        prices['Date'] = prices['Date']
 
-        # 
+        #
         price_qtr_end = prices[prices.Date == self.last_working_day].drop("Date", axis=1).transpose()
         price_qtr_end = price_qtr_end.reset_index()
-        price_qtr_end.columns = ["Symbol", "Prices"]    
-        
+        price_qtr_end.columns = ["Symbol", "Prices"]
+
         df_prices_weights = pd.merge(price_qtr_end, weights, left_on="Symbol", right_on="Symbol")
         df_prices_weights["DollarWeight"] = df_prices_weights["Weights"].apply(lambda x: ptf_size*x )
-        df_prices_weights["NumShares"] = df_prices_weights["DollarWeight"].values / df_prices_weights["Prices"].values    
+        df_prices_weights["NumShares"] = df_prices_weights["DollarWeight"].values / df_prices_weights["Prices"].values
 
         df_prices_weights["NumShares"] = np.floor( df_prices_weights["DollarWeight"] / df_prices_weights["Prices"] )
         cash = (ptf_size - sum(df_prices_weights["NumShares"]*df_prices_weights["Prices"]))
@@ -72,5 +71,3 @@ class Valuation:
         df_quarterly_allocation.to_csv(fullpath(self.folder_path_quarterly,get_datestr(self.current_date)+".csv"), index=False)
 
         return df_quarterly_allocation
-    
-

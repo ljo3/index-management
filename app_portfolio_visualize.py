@@ -1,7 +1,7 @@
 import streamlit as st
 import seaborn as sns
 import matplotlib.pyplot as plt
-from strategy.Manager import MaxSharpeRatioPortfolio
+from index_management.strategy.Manager import MaxSharpeRatioPortfolio
 
 st.title("Portfolio Visualization App")
 st.write("This app visualizes portfolio weights and covariance matrices for a given Max Sharpe Ratio Portfolio strategy")

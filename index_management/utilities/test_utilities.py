@@ -1,5 +1,5 @@
 import unittest
-from utilities.utils import fullpath, get_datestr, get_datetime, last_working_day, last_day, validate_date
+from index_management.utilities.utils import fullpath, get_datestr, get_datetime, last_working_day, last_day, validate_date
 from datetime import datetime
 import pandas as pd
 

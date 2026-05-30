@@ -1,6 +1,6 @@
 import unittest
-from universe.Manager import Universe
-from utilities.utils import fullpath, get_datestr
+from index_management.universe.Manager import Universe
+from index_management.utilities.utils import fullpath, get_datestr
 import pandas as pd
 
 class TestUniverse(unittest.TestCase):
@@ -16,4 +16,3 @@ class TestUniverse(unittest.TestCase):
 
     def test_na_in_universe(self):
         self.assertEqual(self.df_unv.isna().sum().sum(), 0)
-

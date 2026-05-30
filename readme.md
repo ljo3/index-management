@@ -1,30 +1,31 @@
 # Portfolio construction in the context of financial index management #
 
 To get started:
-1. Setup a conda environment using at least python=3.11  
-   Access a Windows Subsystem for Linux (WSL) terminal and run  
-   `conda create --name env-index-mgt python=3.11`  
-   If an environment is already setup, activate it:  
-   `conda activate env-index-mgt`  
+1. Clone the repo  
+   `git clone https://github.com/ljon3/index-management.git`  
+   `cd index-management`
 
-2. Clone the repo and prepare for execution  
-   `git clone https://github.com/ljon3/index-management.git`    
-   `cd index-management`  
-   `pip install -r requirements.txt`
+2. Create a virtual environment and install dependencies using [uv](https://github.com/astral-sh/uv):  
+   `uv venv`  
+   `uv pip install -r requirements.txt`
 
-3. To launch VSCode with the correct PYTHONPATH:  
-   `source ./_startup.sh`
+3. Activate the environment and set PYTHONPATH to the repo root:  
+   `source .venv/bin/activate`  
+   `export PYTHONPATH=$(pwd)`
 
 Workflows included in this repo:  
 
 * ## Workflow 1: Portfolio construction ##  
-  In this piece i demonstrate the different modules that are put together to manage an index construction workflow robustly. The files of interest are:  
-  `driver-strategy.ipynb`  
-  `driver-market.ipynb`  
-  `driver-universe.ipynb`  
-  `driver-valuation.ipynb`  
+  Start with the end-to-end demo notebook at the repo root:  
+  `driver.ipynb`  
 
-  I have setup driver-strategy.ipynb as a deployable app using streamlit library (https://streamlit.io/). This can be accessed by running from WSL terminal:  
+  Detailed per-module notebooks are in `index_management/drivers/`:  
+  `index_management/drivers/driver-strategy.ipynb`  
+  `index_management/drivers/driver-market.ipynb`  
+  `index_management/drivers/driver-universe.ipynb`  
+  `index_management/drivers/driver-valuation.ipynb`  
+
+  The portfolio can also be explored interactively via the Streamlit app:  
   `streamlit run app_portfolio_visualize.py`  
   access the app by navigating to the address:  
   `http://localhost:8501`  
@@ -36,6 +37,7 @@ Workflows included in this repo:
   `pytest`
 
 * ## Workflow 3: Automation Workflows for CI/CD ##  
-  Finally, to initiate automatically daily valuation workflows, I have setup Github Actions to run automatically. As of now, I have set it up to run on Fridays. This is configured in the file:  
-  `.github/workflows/valuation.yml`   
+  Daily valuation is automated via Github Actions, configured in:  
+  `.github/workflows/valuation.yml`  
+  The script it runs is `.github/scripts/value_daily.py`.  
   This can be visualized at: https://github.com/ljon3/index-management/actions

@@ -1,5 +1,5 @@
 import unittest
-from utilities.utils import fullpath
+from index_management.utilities.utils import fullpath
 import pandas as pd
 
 class TestMarket(unittest.TestCase):
@@ -11,4 +11,3 @@ class TestMarket(unittest.TestCase):
         df_market_caps = pd.read_csv(self.market_path)
         count_na = df_market_caps.isna().sum().sum()
         self.assertEqual(count_na, 0)
-

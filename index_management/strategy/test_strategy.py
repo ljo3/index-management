@@ -1,6 +1,6 @@
 import unittest
-from strategy.Manager import CapWeight
-from strategy.Manager import MaxSharpeRatioPortfolio
+from index_management.strategy.Manager import CapWeight
+from index_management.strategy.Manager import MaxSharpeRatioPortfolio
 
 class TestStrategy(unittest.TestCase):
 
