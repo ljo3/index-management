@@ -23,8 +23,18 @@ daily_dir = fullpath("data", "valuation", "daily", "cw")
 checkpath(daily_dir)
 existing = sorted(glob.glob(os.path.join(daily_dir, "????????.csv")))
 
-if existing:
-    last_date = datetime.strptime(os.path.basename(existing[-1]).replace(".csv", ""), "%Y%m%d")
+# find the last file that contains a valid positive number (skip empty/rate-limited files)
+last_date = None
+for f in reversed(existing):
+    try:
+        val = float(pd.read_csv(f, header=None).iloc[0, 0])
+        if val > 0:
+            last_date = datetime.strptime(os.path.basename(f).replace(".csv", ""), "%Y%m%d")
+            break
+    except Exception:
+        continue
+
+if last_date:
     start_date = last_date + timedelta(days=1)
 else:
     start_date = datetime(2024, 1, 1)
