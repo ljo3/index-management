@@ -497,29 +497,6 @@
 
 </section>
 
-<!-- ── 4. SYSTEM OVERVIEW ── -->
-<section>
-  <h2>System Overview</h2>
-  <p class="label">Four-stage pipeline</p>
-  <div style="height:0.4em"></div>
-  <div class="pipeline">
-    <div class="pipe-box">Universe<span class="pipe-sub">Who's in the index?</span></div>
-    <div class="pipe-arrow">→</div>
-    <div class="pipe-box">Market<span class="pipe-sub">Prices &amp; market caps</span></div>
-    <div class="pipe-arrow">→</div>
-    <div class="pipe-box">Strategy<span class="pipe-sub">Calculate weights</span></div>
-    <div class="pipe-arrow">→</div>
-    <div class="pipe-box">Valuation<span class="pipe-sub">Convert to shares</span></div>
-  </div>
-  <div style="height:0.4em"></div>
-  <ul>
-    <li>Each stage is a self-contained Python module with a <strong>Manager</strong> class</li>
-    <li>All modules are initialised with a <strong>quarter-end date</strong> (e.g. <code>20250331</code>)</li>
-    <li>Data is persisted as CSVs in <strong>Amazon S3</strong> between stages — each stage reads from the previous stage's output</li>
-    <li>The full pipeline runs automatically via <strong>GitHub Actions</strong> on each quarter-end</li>
-  </ul>
-</section>
-
 <!-- ── ARCHITECTURE ── -->
 <section>
   <h2>Architecture</h2>
@@ -584,6 +561,29 @@
     <rect x="420" y="173" width="218" height="34" rx="5" fill="#374151"/>
     <text x="529" y="195" font-size="11" fill="white" text-anchor="middle" font-weight="600" font-family="sans-serif">⚡ GitHub Actions</text>
   </svg>
+</section>
+
+<!-- ── 4. SYSTEM OVERVIEW ── -->
+<section>
+  <h2>System Overview</h2>
+  <p class="label">Four-stage pipeline</p>
+  <div style="height:0.4em"></div>
+  <div class="pipeline">
+    <div class="pipe-box">Universe<span class="pipe-sub">Who's in the index?</span></div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-box">Market<span class="pipe-sub">Prices &amp; market caps</span></div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-box">Strategy<span class="pipe-sub">Calculate weights</span></div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-box">Valuation<span class="pipe-sub">Convert to shares</span></div>
+  </div>
+  <div style="height:0.4em"></div>
+  <ul>
+    <li>Each stage is a self-contained Python module with a <strong>Manager</strong> class</li>
+    <li>All modules are initialised with a <strong>quarter-end date</strong> (e.g. <code>20250331</code>)</li>
+    <li>Data is persisted as CSVs in <strong>Amazon S3</strong> between stages — each stage reads from the previous stage's output</li>
+    <li>The full pipeline runs automatically via <strong>GitHub Actions</strong> on each quarter-end</li>
+  </ul>
 </section>
 
 <!-- ── 5. UNIVERSE ── -->
