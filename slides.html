@@ -515,6 +515,149 @@
 
 </section>
 
+<!-- ── 6. THE PROBLEM → PCA-MSR deep-dive (vertical group) ── -->
+<section>
+
+  <!-- 6a. The Problem — A+B greyed, C highlighted -->
+  <section>
+    <h2>The Problem</h2>
+    <p class="label">Index tracking</p>
+    <div style="height:0.4em"></div>
+    <ul>
+      <li>Given a $1B portfolio, <strong>which 40 stocks</strong> should we hold each quarter?</li>
+      <li>And <strong>how many shares</strong> of each, to best track (or beat) the index?</li>
+    </ul>
+    <div style="height:0.4em"></div>
+    <div class="cols">
+      <div class="col" style="opacity:0.3;">
+        <div class="box">
+          <div class="box-title">Strategy A — Cap Weighting</div>
+          Proportional to market cap. Simple, passive.
+        </div>
+      </div>
+      <div class="col" style="opacity:0.3;">
+        <div class="box">
+          <div class="box-title">Strategy B — Max Sharpe Ratio</div>
+          Maximise risk-adjusted return using Ledoit-Wolf covariance.
+        </div>
+      </div>
+      <div class="col">
+        <div class="box">
+          <div class="box-title">Strategy C — PCA-MSR</div>
+          Reduce to k factors first, then MSR. Cleaner covariance, more diversified weights.
+        </div>
+      </div>
+    </div>
+    <p style="font-size:0.65em; color:var(--muted); margin-top:0.6em;">↓ scroll down to see how PCA-MSR works</p>
+  </section>
+
+  <!-- 6b. What PCA does -->
+  <section>
+    <h2>What PCA Does</h2>
+    <p class="label">Dimensionality reduction</p>
+    <div style="height:0.3em"></div>
+    <div class="box" style="margin-bottom:0.5em;">
+      <div class="box-title">The core idea</div>
+      40 stocks don't move independently — they share <strong>common themes</strong>. PCA finds those themes and lets the optimiser work on them instead.
+    </div>
+    <div class="cols" style="font-size:0.82em;">
+      <div class="col">
+        <div class="box">
+          <div class="box-title">PC 1 — Broad market</div>
+          Almost everything moves together when the market goes up or down. The first component captures this shared drift.
+        </div>
+        <div style="height:0.4em"></div>
+        <div class="box">
+          <div class="box-title">PC 2 — Sector rotation</div>
+          Banks and industrials move differently from luxury and tech. The second component captures these sector tilts.
+        </div>
+      </div>
+      <div class="col">
+        <div class="box">
+          <div class="box-title">PC 3+ — Finer distinctions</div>
+          Export-heavy vs. domestic, large cap vs. small cap, cyclical vs. defensive — each further component isolates a subtler pattern.
+        </div>
+        <div style="height:0.4em"></div>
+        <div class="box">
+          <div class="box-title">Auto-selecting k</div>
+          We keep enough components to explain <strong>≥90% of total variance</strong>. With a full year of history this is typically 5–12 factors. The rest is noise we deliberately discard.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6c. How stocks get their weights -->
+  <section>
+    <h2>How Stocks Get Their Weights</h2>
+    <p class="label">Factor → stock projection</p>
+    <div style="height:0.3em"></div>
+    <div class="cols" style="font-size:0.82em;">
+      <div class="col">
+        <div class="box">
+          <div class="box-title">Step 1 — Optimise in factor space</div>
+          The MSR optimiser finds weights across the <strong>k factors</strong>, not across 40 stocks. Each factor weight says how much to bet on that particular market theme.
+        </div>
+        <div style="height:0.4em"></div>
+        <div class="box">
+          <div class="box-title">Step 2 — Project back via loadings</div>
+          The <strong>loadings matrix</strong> (40 × k) records how much each stock participates in each factor. Multiplying factor weights by the loadings gives a raw weight for every stock.
+          <div style="text-align:center; margin:0.4em 0; font-family:monospace; font-size:0.95em;">
+            w<sub>stocks</sub> = loadings × w<sub>factors</sub>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="box">
+          <div class="box-title">Step 3 — Long-only constraint</div>
+          Some projected weights come out negative (a stock with a negative loading on a high-weight factor). These are <strong>clipped to zero</strong> and the remainder renormalised to sum to 1.
+        </div>
+        <div style="height:0.4em"></div>
+        <div class="box" style="border-color:#59a14f;">
+          <div class="box-title" style="color:#59a14f;">Result</div>
+          Stocks that participate strongly in the best-scoring factors get higher weights — naturally diversified across themes rather than concentrated in one or two names.
+        </div>
+      </div>
+    </div>
+    <p style="font-size:0.68em; color:var(--muted); margin-top:0.4em;">↓ next: a known limitation with limited data</p>
+  </section>
+
+  <!-- 6d. Current limitation -->
+  <section>
+    <h2>Known Limitation</h2>
+    <p class="label">Why the current weights look off</p>
+    <div style="height:0.3em"></div>
+    <div class="box" style="margin-bottom:0.5em; border-color:#c0674a;">
+      <div class="box-title" style="color:#c0674a;">Data shortage</div>
+      The price history on S3 was partially overwritten by rate-limited fetches. The restored file covers only ~3 months (84 rows) — giving just <strong>3 monthly return observations</strong> after sampling.
+    </div>
+    <div class="cols" style="font-size:0.82em;">
+      <div class="col">
+        <div class="box">
+          <div class="box-title">Effect on PCA</div>
+          With 3 observations and 39 stocks, the return matrix has rank 3 at most. PCA finds only <strong>k = 2 components</strong> that explain 100% of variance — not because 2 factors is correct, but because there isn't enough data to reveal more.
+        </div>
+        <div style="height:0.4em"></div>
+        <div class="box">
+          <div class="box-title">Effect on weights</div>
+          Weights are computed from 3 data points. They are <strong>not robust</strong> and will look concentrated or arbitrary compared to what a full year of history would produce.
+        </div>
+      </div>
+      <div class="col">
+        <div class="box" style="border-color:#59a14f;">
+          <div class="box-title" style="color:#59a14f;">Fix in progress</div>
+          A backfill of <strong>274 missing trading days</strong> (2025-05-03 → present) is ready to run once Yahoo Finance rate limiting clears. With 12+ monthly observations, PCA will find 5–12 meaningful components and weights will be far more stable.
+        </div>
+        <div style="height:0.4em"></div>
+        <div class="box">
+          <div class="box-title">This is a data problem, not a strategy flaw</div>
+          PCA-MSR is mathematically sound. The same approach on the full history would produce well-diversified, stable weights — as intended.
+        </div>
+      </div>
+    </div>
+  </section>
+
+</section>
+
 <!-- ── ARCHITECTURE ── -->
 <section>
   <h2>Architecture</h2>
