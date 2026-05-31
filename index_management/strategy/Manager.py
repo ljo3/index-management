@@ -8,6 +8,7 @@ import numpy as np
 from decimal import getcontext, Decimal
 from scipy.optimize import minimize
 from sklearn.covariance import LedoitWolf
+from sklearn.decomposition import PCA
 
 
 getcontext().prec = 16
@@ -172,5 +173,115 @@ class MaxSharpeRatioPortfolio(BaseStrategy):
         WeightsValidator(weights=df_to_write)
         df_to_write.to_csv(fullpath( self.path_strategy("msr"),
                                                   get_datestr(self.current_date)+".csv" ), index=False)
+
+        return prior_weights, df_weights
+
+
+class PCAMaxSharpeRatioPortfolio(BaseStrategy):
+
+    """
+    Strategy C: PCA-enhanced MSR.
+
+    Reduces the N-stock return space to k principal components (auto-selected
+    by explained variance threshold), estimates a cleaner LedoitWolf covariance
+    in that lower-dimensional space, runs the MSR optimiser on the factors, then
+    projects the factor weights back to individual stocks.
+
+    Compared to plain MSR (Strategy B), this produces more diversified weights
+    because the optimiser works on a well-conditioned k×k covariance rather than
+    a noisy N×N one.
+    """
+
+    def __init__(self, current_date, variance_threshold=0.90):
+        self.inception_date = validate_date("2020-12-31")
+        self.current_date = validate_date(current_date)
+        self.last_day = last_day(self.current_date)
+        self.last_working_day = last_working_day(self.current_date)
+        self.module = "pca"
+        self.market_module = "prices"
+        self.risk_free_rate = 0.035
+        self.variance_threshold = variance_threshold
+        DateConfig(current_date=self.current_date)
+
+    def calculate_weights(self):
+
+        [data_market, prior_weights] = self.prepare_strategy()
+
+        # ── same preprocessing as MSR ──────────────────────────────────────
+        data_market["Date"] = pd.to_datetime(data_market["Date"])
+        start_date, end_date = data_market.iloc[[0, -1]]["Date"].values
+        all_dates = pd.date_range(start=start_date, end=end_date)
+        df_all = pd.merge(
+            data_market,
+            pd.DataFrame(all_dates, columns=["Dates"]),
+            left_on="Date", right_on="Dates", how="right"
+        )
+        df_all.drop("Date", axis=1, inplace=True)
+        df_all.ffill(axis=0, inplace=True)
+        df_all = df_all.loc[df_all.Dates.dt.is_month_end]
+        df_all.drop("Dates", axis=1, inplace=True)
+        df_all = df_all.dropna(axis=1, how="all")
+
+        df_returns = df_all.pct_change().dropna()
+        stocks = df_returns.columns.tolist()
+        N = len(stocks)
+
+        # ── auto-select k via explained variance ───────────────────────────
+        pca_full = PCA().fit(df_returns.values)
+        cumvar = np.cumsum(pca_full.explained_variance_ratio_)
+        k = int(np.searchsorted(cumvar, self.variance_threshold)) + 1
+        k = min(k, N - 1, len(df_returns) - 1)
+
+        self.n_components_used = k
+        self.explained_variance_pct = cumvar[k - 1]
+        self.explained_variance_ratio_ = pca_full.explained_variance_ratio_
+
+        # ── PCA: reduce to k factors ───────────────────────────────────────
+        pca = PCA(n_components=k)
+        factor_returns = pca.fit_transform(df_returns.values)  # (T, k)
+        loadings = pca.components_.T                           # (N, k)
+
+        # ── LedoitWolf covariance in factor space ──────────────────────────
+        lw = LedoitWolf().fit(factor_returns)
+        cov_pc = lw.covariance_                                # (k, k)
+
+        # ── expected returns projected to factor space ─────────────────────
+        mu_stocks = df_returns.mean().values                   # (N,)
+        mu_pc = loadings.T @ mu_stocks                         # (k,)
+
+        # ── MSR optimisation in PC space ───────────────────────────────────
+        def neg_sharpe(w, cov):
+            ret = np.dot(w, mu_pc)
+            vol = np.sqrt(np.dot(w, np.dot(cov, w)))
+            return -(ret - self.risk_free_rate / 12) / vol
+
+        init_w = np.ones(k) / k
+        result = minimize(
+            neg_sharpe, init_w, args=(cov_pc,), method="SLSQP",
+            bounds=[(0, 1)] * k,
+            constraints=[{"type": "eq", "fun": lambda w: np.sum(w) - 1}]
+        )
+        w_pc = result.x                                        # (k,)
+
+        # ── project back to stock space ────────────────────────────────────
+        w_stocks = loadings @ w_pc                             # (N,)
+        w_stocks = np.maximum(w_stocks, 0)                     # long-only
+        w_stocks /= w_stocks.sum()                             # renormalise
+
+        df_weights = pd.DataFrame({"Asset": stocks, "Weight_PCA": w_stocks})
+        df_weights["Weight_PCA"] = df_weights["Weight_PCA"].apply(
+            lambda x: 0.0 if x < 1e-6 else x
+        )
+        # renormalise after zeroing tiny weights
+        total = df_weights["Weight_PCA"].sum()
+        if total > 0:
+            df_weights["Weight_PCA"] /= total
+
+        df_to_write = df_weights.rename(columns={"Asset": "Symbol", "Weight_PCA": "Weights"})
+        WeightsValidator(weights=df_to_write)
+        df_to_write.to_csv(
+            fullpath(self.path_strategy("pca"), get_datestr(self.current_date) + ".csv"),
+            index=False
+        )
 
         return prior_weights, df_weights

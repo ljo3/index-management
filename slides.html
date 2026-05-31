@@ -220,13 +220,19 @@
     <div class="col">
       <div class="box">
         <div class="box-title">Strategy A — Cap Weighting</div>
-        Weight each stock proportional to its market capitalisation. Simple, passive, mirrors the index directly.
+        Proportional to market cap. Simple, passive, mirrors the index.
       </div>
     </div>
     <div class="col">
       <div class="box">
         <div class="box-title">Strategy B — Max Sharpe Ratio</div>
-        Optimise weights to maximise risk-adjusted return. More complex, potentially higher performance.
+        Maximise risk-adjusted return using Ledoit-Wolf covariance.
+      </div>
+    </div>
+    <div class="col">
+      <div class="box">
+        <div class="box-title">Strategy C — PCA-MSR</div>
+        Reduce to k factors first, then MSR. Cleaner covariance, more diversified weights.
       </div>
     </div>
   </div>
@@ -235,7 +241,7 @@
 <!-- ── 4. THE PROBLEM → Cap Weight deep-dive (vertical group) ── -->
 <section>
 
-  <!-- 4a. Copy of The Problem with Strategy B greyed out -->
+  <!-- 4a. Copy of The Problem with Strategy B+C greyed out -->
   <section>
     <h2>The Problem</h2>
     <p class="label">Index tracking</p>
@@ -249,13 +255,19 @@
       <div class="col">
         <div class="box">
           <div class="box-title">Strategy A — Cap Weighting</div>
-          Weight each stock proportional to its market capitalisation. Simple, passive, mirrors the index directly.
+          Proportional to market cap. Simple, passive, mirrors the index.
         </div>
       </div>
       <div class="col" style="opacity:0.3;">
         <div class="box">
           <div class="box-title">Strategy B — Max Sharpe Ratio</div>
-          Optimise weights to maximise risk-adjusted return. More complex, potentially higher performance.
+          Maximise risk-adjusted return using Ledoit-Wolf covariance.
+        </div>
+      </div>
+      <div class="col" style="opacity:0.3;">
+        <div class="box">
+          <div class="box-title">Strategy C — PCA-MSR</div>
+          Reduce to k factors first, then MSR. Cleaner covariance, more diversified weights.
         </div>
       </div>
     </div>
@@ -344,6 +356,12 @@
         <div class="box">
           <div class="box-title">Strategy B — Max Sharpe Ratio</div>
           Maximise risk-adjusted return. More complex, higher potential.
+        </div>
+      </div>
+      <div class="col" style="opacity:0.3;">
+        <div class="box">
+          <div class="box-title">Strategy C — PCA-MSR</div>
+          Reduce to k factors first, then MSR. Cleaner covariance, more diversified weights.
         </div>
       </div>
     </div>
@@ -695,6 +713,52 @@
   </ul>
 </section>
 
+<!-- ── 8b. STRATEGY: PCA-MSR ── -->
+<section>
+  <h2>Stage 3 — Strategy</h2>
+  <p class="label">PCA-MSR <span class="tag">Strategy C</span></p>
+  <div style="height:0.4em"></div>
+  <div class="pipeline" style="justify-content:flex-start;">
+    <div class="pipe-box" style="opacity:0.4;">Universe</div>
+    <div class="pipe-arrow" style="opacity:0.4;">→</div>
+    <div class="pipe-box" style="opacity:0.4;">Market</div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-box highlight">Strategy</div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-box" style="opacity:0.4;">Valuation</div>
+  </div>
+  <div style="height:0.3em"></div>
+  <div class="cols" style="font-size:0.85em;">
+    <div class="col">
+      <div class="box">
+        <div class="box-title">Step 1 — Dimensionality reduction</div>
+        Run PCA on the 40-stock return matrix. Auto-select k components that explain ≥90% of variance (typically 5–12 for a year of history). Each component is a <strong>market factor</strong> — e.g. broad market, banks vs. energy, domestic vs. export.
+      </div>
+      <div style="height:0.4em"></div>
+      <div class="box">
+        <div class="box-title">Step 2 — Clean covariance</div>
+        Fit <strong>Ledoit-Wolf</strong> on the k×k factor return matrix — far better conditioned than the 40×40 stock matrix with limited history.
+      </div>
+    </div>
+    <div class="col">
+      <div class="box">
+        <div class="box-title">Step 3 — Optimise in factor space</div>
+        Run the same SLSQP MSR optimiser, but on k factors instead of 40 stocks. Weights represent <strong>factor exposures</strong>, not individual stocks.
+      </div>
+      <div style="height:0.4em"></div>
+      <div class="box">
+        <div class="box-title">Step 4 — Project back to stocks</div>
+        Multiply factor weights by the PCA loadings matrix → individual stock weights. Long-only clip and renormalise.
+      </div>
+      <div style="height:0.4em"></div>
+      <div class="box" style="border-color:#59a14f;">
+        <div class="box-title" style="color:#59a14f;">vs Strategy B</div>
+        More holdings, less concentration. The optimiser cannot over-bet on a single stock's idiosyncratic noise.
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- ── 9. VALUATION ── -->
 <section>
   <h2>Stage 4 — Valuation</h2>
@@ -781,7 +845,7 @@
   <div style="height:0.4em"></div>
   <ul>
     <li>End-to-end pipeline tracking the <strong>CAC 40</strong> with quarterly rebalancing</li>
-    <li>Two strategies: <strong>passive cap weighting</strong> and <strong>optimised max Sharpe ratio</strong></li>
+    <li>Three strategies: <strong>cap weighting</strong> (A), <strong>MSR with Ledoit-Wolf</strong> (B), and <strong>PCA-MSR</strong> (C — factor-space optimisation)</li>
     <li>scikit-learn's <strong>LedoitWolf</strong> covariance estimator stabilises the MSR optimisation</li>
     <li>Fully automated via <strong>GitHub Actions</strong> — universe updates and daily valuation run without manual intervention</li>
   </ul>
