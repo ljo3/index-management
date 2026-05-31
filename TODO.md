@@ -18,6 +18,11 @@
 ### Data quality
 - [ ] **`sklearn.ensemble.IsolationForest`** or **`sklearn.neighbors.LocalOutlierFactor`** — detect outlier prices/returns before they propagate into the covariance matrix
 
+### Missing data imputation
+- [ ] **`sklearn.impute.KNNImputer`** *(recommended)* — fill missing prices/caps using weighted average of k nearest neighbour stocks (most similar return profile); best fit for UBLB.F (all-NaN prices) and ML.PA (no market cap)
+- [ ] **`sklearn.impute.SimpleImputer`** — simpler fallback; fill with column mean/median; lower quality but fast and interpretable
+- [ ] **`sklearn.impute.IterativeImputer`** — models each missing column as a function of all others (MICE algorithm); most accurate but slowest; worth benchmarking against KNN
+
 ---
 
 # DONE
@@ -32,3 +37,5 @@
 - [x] Create an S3 bucket (`index-management-data`, eu-west-3)
 - [x] Add 3 GitHub Secrets to the repo: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`
 - [x] CI workflows updated, `data/` removed from git, synced to S3
+
+    
