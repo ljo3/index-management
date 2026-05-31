@@ -337,13 +337,13 @@
       <div class="col" style="opacity:0.3;">
         <div class="box">
           <div class="box-title">Strategy A — Cap Weighting</div>
-          Weight each stock proportional to its market capitalisation. Simple, passive, mirrors the index directly.
+          Proportional to market cap. Simple, passive.
         </div>
       </div>
       <div class="col">
         <div class="box">
           <div class="box-title">Strategy B — Max Sharpe Ratio</div>
-          Optimise weights to maximise risk-adjusted return. More complex, potentially higher performance.
+          Maximise risk-adjusted return. More complex, higher potential.
         </div>
       </div>
     </div>
@@ -355,7 +355,7 @@
     <h2>The Efficient Frontier</h2>
     <p class="label">Visualising risk vs. return</p>
     <div style="height:0.2em"></div>
-    <p style="font-size:0.78em;">Every mix of stocks lands in <strong>risk-return space</strong>. The <span style="color:var(--accent); font-weight:600;">frontier</span> is the best possible return for each level of risk. The Max Sharpe point is the steepest angle from the risk-free rate.</p>
+    <p style="font-size:0.78em;">The <span style="color:var(--accent); font-weight:600;">frontier</span> shows the best return for each level of risk. Max Sharpe is where the line from the risk-free rate just touches it.</p>
 
     <svg viewBox="0 0 520 240" style="width:100%; max-height:210px; display:block; margin:0.3em auto;">
       <defs>
@@ -465,31 +465,31 @@
     <div style="height:0.3em"></div>
 
     <div class="box" style="margin-bottom:0.5em;">
-      <div class="box-title">The problem with limited data</div>
-      We only have ~60 trading days of data per quarter. Estimating how 40 stocks relate to each other from 60 observations is noisy — like judging a coin's fairness from 10 flips.
+      <div class="box-title">The problem</div>
+      ~60 days of data to estimate 40 stocks. Small sample = noisy estimates.
     </div>
 
     <div class="cols" style="font-size:0.82em;">
       <div class="col">
         <div class="box">
           <div class="box-title">Without shrinkage</div>
-          The covariance matrix is taken at face value. Extreme values (one stock happened to spike) get treated as real signals. The optimiser over-bets on noise.
+          Extreme values treated as real signals. Optimiser over-bets on noise.
         </div>
         <div style="height:0.4em"></div>
         <div class="box" style="border-color:#c0674a;">
           <div class="box-title" style="color:#c0674a;">Analogy</div>
-          One rainy Tuesday doesn't mean it rains every Tuesday. But a naive model would think so.
+          One rainy Tuesday ≠ it rains every Tuesday.
         </div>
       </div>
       <div class="col">
         <div class="box">
           <div class="box-title">With Ledoit-Wolf</div>
-          Pull extreme estimates <strong>back toward the average</strong>. Blend "what actually happened" with "a sensible baseline". Less sensitive to one quarter's fluke.
+          Pull extremes <strong>toward the average</strong>. Less sensitive to one quarter's fluke.
         </div>
         <div style="height:0.4em"></div>
         <div class="box" style="border-color:var(--accent);">
           <div class="box-title">Result</div>
-          A smoother, more stable covariance matrix → the optimiser finds weights that are likely to <strong>hold up next quarter</strong>, not just fit last quarter perfectly.
+          Smoother covariance → weights that <strong>hold up next quarter</strong>, not just fit the past.
         </div>
       </div>
     </div>
