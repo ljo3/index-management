@@ -6,6 +6,11 @@ on:
   push:
     branches:
       - 'main'
+    paths:
+      - 'index_management/**'
+      - '.github/scripts/**'
+      - '.github/workflows/valuation.yml'
+      - 'requirements.txt'
   workflow_dispatch:
 
 jobs:
