@@ -394,17 +394,17 @@
       <path d="M 110 195 C 135 130 210 72 440 48" stroke="var(--accent)" stroke-width="3" fill="none" stroke-linecap="round"/>
       <text x="445" y="46" font-size="11" fill="var(--accent)" font-family="sans-serif" font-weight="bold">Frontier</text>
 
-      <!-- Capital Market Line (from risk-free rate, tangent to frontier) -->
-      <line x1="55" y1="200" x2="340" y2="68" stroke="#c0674a" stroke-width="1.8" stroke-dasharray="7,4"/>
+      <!-- Capital Market Line: from risk-free rate, tangent to frontier at t≈0.40 (171,122) -->
+      <line x1="55" y1="200" x2="340" y2="8" stroke="#c0674a" stroke-width="1.8" stroke-dasharray="7,4"/>
 
       <!-- Risk-free rate label -->
       <circle cx="55" cy="200" r="5" fill="#c0674a"/>
       <text x="62" y="197" font-size="11" fill="#c0674a" font-family="sans-serif">Risk-free rate</text>
 
-      <!-- Max Sharpe point (tangency) -->
-      <circle cx="196" cy="108" r="9" fill="#c0674a" stroke="white" stroke-width="2"/>
-      <text x="212" y="102" font-size="12" fill="#c0674a" font-weight="bold" font-family="sans-serif">★ Max Sharpe</text>
-      <text x="212" y="116" font-size="10" fill="#c0674a" font-family="sans-serif">best return per unit of risk</text>
+      <!-- Max Sharpe point (true tangency at t≈0.40 on the Bezier frontier) -->
+      <circle cx="171" cy="122" r="9" fill="#c0674a" stroke="white" stroke-width="2"/>
+      <text x="187" y="116" font-size="12" fill="#c0674a" font-weight="bold" font-family="sans-serif">★ Max Sharpe</text>
+      <text x="187" y="130" font-size="10" fill="#c0674a" font-family="sans-serif">best return per unit of risk</text>
     </svg>
 
     <p style="font-size:0.68em; color:var(--muted);">↓ next: how we find that point mathematically</p>
