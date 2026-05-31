@@ -562,18 +562,18 @@
     <div class="col">
       <div class="box">
         <div class="box-title">Market caps</div>
-        Company size at quarter-end → <strong>Cap Weight</strong>
+        Each company's total market value at quarter-end — used by the Cap Weight strategy to compute proportional weights.
       </div>
     </div>
     <div class="col">
       <div class="box">
         <div class="box-title">Price history</div>
-        Daily closes, last quarter → <strong>MSR</strong>
+        Daily closing prices for all 40 tickers going back to the previous quarter — used by the MSR strategy for return calculations.
       </div>
     </div>
   </div>
   <div style="height:0.4em"></div>
-  <p style="font-size:0.75em; color:var(--muted);">Source: <strong>yfinance</strong></p>
+  <p style="font-size:0.75em; color:var(--muted);">Data fetched from <strong>yfinance</strong> (Yahoo Finance Python library)</p>
 </section>
 
 <!-- ── 7. STRATEGY: CAP WEIGHT ── -->
