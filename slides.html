@@ -24,34 +24,44 @@
     .reveal, .reveal .backgrounds { background-color: #f0f2f5 !important; }
     .reveal .slide-background { background: #f0f2f5 !important; }
 
-    /* ── Dark mode — manual toggle ── */
-    html[data-theme="dark"] { --accent: #e8967e; --light: #2e201c; --muted: #c4907f; }
+    /* ── Dark mode — manual toggle (VS Code Dark+) ── */
+    html[data-theme="dark"] {
+      --accent: #569cd6;
+      --light:  #252526;
+      --muted:  #858585;
+    }
     html[data-theme="dark"] .reveal,
     html[data-theme="dark"] .reveal section,
     html[data-theme="dark"] .reveal p,
     html[data-theme="dark"] .reveal li,
-    html[data-theme="dark"] .reveal ul { color: #f5e6e0 !important; }
+    html[data-theme="dark"] .reveal ul { color: #d4d4d4 !important; }
     html[data-theme="dark"] .reveal h1,
     html[data-theme="dark"] .reveal h2,
-    html[data-theme="dark"] .reveal h3 { color: #e8967e !important; }
+    html[data-theme="dark"] .reveal h3 { color: #569cd6 !important; }
     html[data-theme="dark"] .reveal,
-    html[data-theme="dark"] .reveal .backgrounds { background-color: #141414 !important; }
-    html[data-theme="dark"] .reveal .slide-background { background: #141414 !important; }
+    html[data-theme="dark"] .reveal .backgrounds { background-color: #1e1e1e !important; }
+    html[data-theme="dark"] .reveal .slide-background { background: #1e1e1e !important; }
+    html[data-theme="dark"] .pipe-box.highlight { background: #0e639c !important; }
 
-    /* ── Dark mode — system preference ── */
+    /* ── Dark mode — system preference (VS Code Dark+) ── */
     @media (prefers-color-scheme: dark) {
-      html:not([data-theme="light"]) { --accent: #e8967e; --light: #2e201c; --muted: #c4907f; }
+      html:not([data-theme="light"]) {
+        --accent: #569cd6;
+        --light:  #252526;
+        --muted:  #858585;
+      }
       html:not([data-theme="light"]) .reveal,
       html:not([data-theme="light"]) .reveal section,
       html:not([data-theme="light"]) .reveal p,
       html:not([data-theme="light"]) .reveal li,
-      html:not([data-theme="light"]) .reveal ul { color: #f5e6e0 !important; }
+      html:not([data-theme="light"]) .reveal ul { color: #d4d4d4 !important; }
       html:not([data-theme="light"]) .reveal h1,
       html:not([data-theme="light"]) .reveal h2,
-      html:not([data-theme="light"]) .reveal h3 { color: #e8967e !important; }
+      html:not([data-theme="light"]) .reveal h3 { color: #569cd6 !important; }
       html:not([data-theme="light"]) .reveal,
-      html:not([data-theme="light"]) .reveal .backgrounds { background-color: #141414 !important; }
-      html:not([data-theme="light"]) .reveal .slide-background { background: #141414 !important; }
+      html:not([data-theme="light"]) .reveal .backgrounds { background-color: #1e1e1e !important; }
+      html:not([data-theme="light"]) .reveal .slide-background { background: #1e1e1e !important; }
+      html:not([data-theme="light"]) .pipe-box.highlight { background: #0e639c !important; }
     }
 
     #theme-toggle {
