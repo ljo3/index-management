@@ -515,9 +515,75 @@
   <ul>
     <li>Each stage is a self-contained Python module with a <strong>Manager</strong> class</li>
     <li>All modules are initialised with a <strong>quarter-end date</strong> (e.g. <code>20250331</code>)</li>
-    <li>Data is persisted as CSVs between stages — each stage reads from the previous stage's output</li>
+    <li>Data is persisted as CSVs in <strong>Amazon S3</strong> between stages — each stage reads from the previous stage's output</li>
     <li>The full pipeline runs automatically via <strong>GitHub Actions</strong> on each quarter-end</li>
   </ul>
+</section>
+
+<!-- ── ARCHITECTURE ── -->
+<section>
+  <h2>Architecture</h2>
+  <p class="label">How it all fits together</p>
+  <div style="height:0.3em"></div>
+  <svg viewBox="0 0 660 228" style="width:100%; max-height:210px; display:block; margin:0.4em auto;">
+    <defs>
+      <marker id="archGrey" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="5" markerHeight="5" orient="auto">
+        <path d="M0,0 L8,4 L0,8 z" fill="#94a3b8"/>
+      </marker>
+      <marker id="archBlue" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="5" markerHeight="5" orient="auto">
+        <path d="M0,0 L8,4 L0,8 z" fill="#2563eb"/>
+      </marker>
+      <marker id="archAmber" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="5" markerHeight="5" orient="auto">
+        <path d="M0,0 L8,4 L0,8 z" fill="#d97706"/>
+      </marker>
+    </defs>
+
+    <!-- ── Row 1: External data sources ── -->
+    <rect x="18" y="10" width="120" height="32" rx="5" fill="#64748b"/>
+    <text x="78" y="31" font-size="11" fill="white" text-anchor="middle" font-weight="600" font-family="sans-serif">bnains.org</text>
+
+    <rect x="170" y="10" width="145" height="32" rx="5" fill="#64748b"/>
+    <text x="242" y="31" font-size="11" fill="white" text-anchor="middle" font-weight="600" font-family="sans-serif">Yahoo Finance</text>
+
+    <!-- Arrows: sources → pipeline -->
+    <line x1="78" y1="42" x2="78" y2="88" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#archGrey)"/>
+    <text x="84" y="67" font-size="9" fill="#94a3b8" font-family="sans-serif">ISINs</text>
+
+    <line x1="242" y1="42" x2="234" y2="88" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#archGrey)"/>
+    <text x="252" y="67" font-size="9" fill="#94a3b8" font-family="sans-serif">prices / caps</text>
+
+    <!-- ── Row 2: Pipeline ── -->
+    <rect x="18" y="91" width="108" height="36" rx="5" fill="var(--accent)"/>
+    <text x="72" y="114" font-size="12" fill="white" text-anchor="middle" font-weight="600" font-family="sans-serif">Universe</text>
+    <line x1="126" y1="109" x2="162" y2="109" stroke="#2563eb" stroke-width="2" marker-end="url(#archBlue)"/>
+
+    <rect x="166" y="91" width="108" height="36" rx="5" fill="var(--accent)"/>
+    <text x="220" y="114" font-size="12" fill="white" text-anchor="middle" font-weight="600" font-family="sans-serif">Market</text>
+    <line x1="274" y1="109" x2="310" y2="109" stroke="#2563eb" stroke-width="2" marker-end="url(#archBlue)"/>
+
+    <rect x="314" y="91" width="108" height="36" rx="5" fill="var(--accent)"/>
+    <text x="368" y="114" font-size="12" fill="white" text-anchor="middle" font-weight="600" font-family="sans-serif">Strategy</text>
+    <line x1="422" y1="109" x2="458" y2="109" stroke="#2563eb" stroke-width="2" marker-end="url(#archBlue)"/>
+
+    <rect x="462" y="91" width="118" height="36" rx="5" fill="var(--accent)"/>
+    <text x="521" y="114" font-size="12" fill="white" text-anchor="middle" font-weight="600" font-family="sans-serif">Valuation</text>
+
+    <!-- ── S3 read/write arrows (bidirectional, offset) ── -->
+    <line x1="233" y1="127" x2="233" y2="170" stroke="#d97706" stroke-width="1.5" marker-end="url(#archAmber)"/>
+    <line x1="243" y1="170" x2="243" y2="127" stroke="#d97706" stroke-width="1.5" marker-end="url(#archAmber)"/>
+    <text x="253" y="152" font-size="9" fill="#d97706" font-family="sans-serif">read / write</text>
+
+    <!-- ── Row 3: Infrastructure ── -->
+    <rect x="18" y="173" width="380" height="34" rx="5" fill="#b45309"/>
+    <text x="208" y="195" font-size="12" fill="white" text-anchor="middle" font-weight="700" font-family="sans-serif">☁  Amazon S3 — data store</text>
+
+    <!-- GitHub Actions trigger (dashed) -->
+    <line x1="505" y1="173" x2="521" y2="129" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#archGrey)"/>
+    <text x="547" y="157" font-size="9" fill="#94a3b8" font-family="sans-serif">triggers</text>
+
+    <rect x="420" y="173" width="218" height="34" rx="5" fill="#374151"/>
+    <text x="529" y="195" font-size="11" fill="white" text-anchor="middle" font-weight="600" font-family="sans-serif">⚡ GitHub Actions</text>
+  </svg>
 </section>
 
 <!-- ── 5. UNIVERSE ── -->
@@ -652,7 +718,7 @@
   <div style="height:0.4em"></div>
   <div class="box">
     <div class="box-title">Daily valuation (CI)</div>
-    A GitHub Actions job runs on every push to <code>main</code> — it fetches live prices, multiplies by the share counts, and commits the portfolio value back to the repo as a CSV.
+    GitHub Actions fetches live prices daily, multiplies by share counts, and syncs the portfolio value to <strong>Amazon S3</strong> as a CSV.
   </div>
 </section>
 
@@ -667,7 +733,7 @@
         <div class="box-title">Quarterly — Universe Update</div>
         <ul style="margin-top:0.3em;">
           <li>Triggers on the last few days of each quarter month (Mar / Jun / Sep / Dec)</li>
-          <li>Fetches new CAC 40 composition, resolves ISINs, appends new quarter to <code>quarters.txt</code></li>
+          <li>Fetches new CAC 40 composition, resolves ISINs, appends new quarter to <code>quarters.txt</code>, syncs to <strong>S3</strong></li>
           <li>Idempotent — safe to re-run</li>
         </ul>
       </div>
@@ -676,8 +742,8 @@
       <div class="box">
         <div class="box-title">Daily — Portfolio Valuation</div>
         <ul style="margin-top:0.3em;">
-          <li>Triggers on every push to <code>main</code></li>
-          <li>Downloads latest prices, computes portfolio value, auto-commits output CSVs</li>
+          <li>Triggers daily at 18:00 UTC (or on relevant code changes)</li>
+          <li>Syncs data from S3, fetches live prices, computes portfolio value, syncs result back to <strong>S3</strong></li>
           <li>Keeps a running daily history of portfolio performance</li>
         </ul>
       </div>
