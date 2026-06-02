@@ -172,6 +172,17 @@
     }
 
     .reveal .slides section .fragment { opacity: 1; visibility: visible; }
+
+    /* slide number — bottom center, current/total */
+    .reveal .slide-number {
+      left: 50%;
+      transform: translateX(-50%);
+      right: auto;
+      bottom: 12px;
+      font-size: 0.75em;
+      background: transparent;
+      color: var(--muted);
+    }
   </style>
 </head>
 <body>
@@ -1165,7 +1176,7 @@
     hash: true,
     controls: true,
     progress: true,
-    slideNumber: true,
+    slideNumber: 'c/t',
     transition: 'slide',
     transitionSpeed: 'fast',
   });
