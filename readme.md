@@ -1,5 +1,7 @@
 # Portfolio construction in the context of financial index management #
 
+[View slides](https://rawcdn.githack.com/ljon3/index-management/main/slides.html)
+
 To get started:
 1. Clone the repo  
    `git clone https://github.com/ljon3/index-management.git`  
